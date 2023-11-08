@@ -19,20 +19,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11  # Choose the Python version you need
+          python-version: 3.x  # Choose the Python version you need
 
       - name: Install dependencies
         run: pip install flake8
 
-      - name: Create a temporary branch
-        run: git checkout -b temp-branch
-
-      - name: Determine changed files and lines
+      - name: Identify changed lines and files
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)
-          CHANGED_LINES=$(git diff -U0 ${{ github.event.before }} ${{ github.event.after }} $CHANGED_FILES | sed -n -e '/^+[^+]/ p' | flake8 --diff --jobs=auto --diff-str $(cat))
-          echo "$CHANGED_LINES" > changed_lines.txt
+          python extract_changes.py ${{ github.event.before }} ${{ github.event.after }}
 
       - name: Run flake8 on changed lines
         run: |
-          flake8 --jobs=auto --diff $(cat changed_lines.txt)
+          flake8 $(cat changed_files.txt)
