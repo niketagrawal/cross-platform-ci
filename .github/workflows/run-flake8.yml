@@ -26,7 +26,7 @@ jobs:
 
       - name: Identify changed lines and files
         run: |
-          python extract_changes.py ${{ github.event.before }} ${{ github.event.after }}
+          python test_example.py ${{ github.event.before }} ${{ github.event.after }}
 
       - name: Run flake8 on changed lines
         run: |
