@@ -1,4 +1,4 @@
-name: Check Coding Style with flake8
+name: Check Coding Style with flake8 on Changed Lines
 
 on:
   push:
@@ -24,6 +24,15 @@ jobs:
       - name: Install dependencies
         run: pip install flake8
 
-      - name: Run flake8 on code changes
+      - name: Create a temporary branch
+        run: git checkout -b temp-branch
+
+      - name: Determine changed files and lines
         run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs flake8
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | xargs)
+          CHANGED_LINES=$(git diff -U0 ${{ github.event.before }} ${{ github.event.after }} $CHANGED_FILES | sed -n -e '/^+[^+]/ p' | flake8 --diff --jobs=auto --diff-str $(cat))
+          echo "$CHANGED_LINES" > changed_lines.txt
+
+      - name: Run flake8 on changed lines
+        run: |
+          flake8 --jobs=auto --diff $(cat changed_lines.txt)
